@@ -1,16 +1,26 @@
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
 import './App.css'
+import About from './components/About.tsx';
 
 function App() {
   return (
     <>
-      <h1>Hello world!</h1>
-      <div className="about">
-        <p>Powered by React and Vite</p>
-        <img src={reactLogo} alt="React logo" />
-        <img src={viteLogo} alt="Vite logo" />
+      <header>
+        <div className="top-bar">
+          <p className="version">V.0.0.1</p>
+        </div>
+        <div className="title">
+          <h1>COMP/CON</h1>
+        </div>
+      </header>
+      <div className="buffer"></div>
+      <div className="console">
+        <p>This is console text.</p>
       </div>
+      <footer>
+        <div className="align-right">
+          <About/>
+        </div>
+      </footer>
     </>
   )
 }

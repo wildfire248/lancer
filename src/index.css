@@ -1,3 +1,45 @@
-:root {
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
+@font-face {
+    font-family: "Helvetica";
+    src:
+            local("Helvetica"),
+            url("/public/Helvetica.woff2");
+}
+
+@font-face {
+    font-family: "Helvetica Bold";
+    src:
+            local("Helvetica Bold"),
+            url("/public/Helvetica-Bold.woff2");
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: "Consolas";
+    src:
+            local("Consolas"),
+            url("/public/Consolas.woff2");
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    background-color: #11151c;
+    color: #fff;
+
+    font-family: Roboto,sans-serif;
+    line-height: 1.5;
+    font-size: 1rem;
+    text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: Helvetica Bold,sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin: 0;
 }
