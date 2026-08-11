@@ -1,0 +1,53 @@
+import {useEffect, useState} from 'react';
+
+import './Typewriter.css';
+
+function useTypewriter(text: string, speed: number = 50, onAnimationEnd?: () => void): [string, boolean] {
+  const [displayText, setDisplayText] = useState('');
+  const [displayLength, setDisplayLength] = useState(0);
+  const [showCursor, setShowCursor] = useState(false);
+
+  useEffect(() => {
+    if (displayText !== text) {
+      setShowCursor(false);
+      for (let i = 0; i < Math.max(displayText.length, text.length); i++) {
+        if (displayText.charAt(i) !== text.charAt(i)) {
+          if (displayLength > i) {
+            const timer = setTimeout(() => setDisplayLength(displayLength - 1), speed);
+            return () => clearTimeout(timer);
+          } else {
+            setDisplayText(text);
+          }
+        }
+      }
+    }
+    if (displayLength != displayText.length) {
+      setShowCursor(false);
+      const timer = setTimeout(() => setDisplayLength(displayLength + 1), speed);
+      return () => clearTimeout(timer);
+    }
+    setShowCursor(true);
+    onAnimationEnd?.();
+  }, [text, speed, displayText, displayLength]);
+
+  // console.log(displayText.slice(0, displayLength));
+
+  return [displayText.slice(0, displayLength), showCursor];
+}
+
+interface Props {
+  text: string;
+  speed?: number;
+  onAnimationEnd?: () => void;
+}
+
+function Typewriter(props: Props) {
+  const [displayText, showCursor] = useTypewriter(props.text, props.speed, props.onAnimationEnd);
+
+  return (
+    <pre className={`typewriter${showCursor ? ' cursor' : ''}`}>{displayText}</pre>
+  )
+
+}
+
+export default Typewriter;
