@@ -4,50 +4,56 @@ import Typewriter from './components/Typewriter.tsx';
 import {useRef, useState} from 'react';
 import * as React from 'react';
 
-const CHARACTERS = /^[A-Za-z0-9 `~!@#$%^&*(),<.>/?;:'"\[{\]}\\|_-]$/;
-const CONSOLE_INPUT = '~ ';
-const CONSOLE_INIT = '' +
-  'COMPANION/CONCIERGE UNIT INITIALIZING\n' +
-  'GMS COMP/CON Unit Mk XI Rev 11.4.1c\n' +
-  '5016.8.22 General Massive Systems // Please Operate Responsibly\n' +
-  'Initializing semantic manifold . . . done\n' +
-  'Initializing logic gradients . . . done\n' +
-  '  1.0255EB FREE (3.6EB TOTAL)\n' +
-  'KERNEL supported CPUs:\n' +
-  '  GMS MISSISSIPPI Series (MkII+)\n' +
-  '  IPS-N Carronade v9.1+\n' +
-  '  SSC Premier IV-XIV\n' +
-  '  HA DOMINANCE line/all\n' +
-  '  [WN UNKNOWN UNKNOWN UNKNOWN UNKNOWN UNKNOWN UNKN]\n' +
-  'Policy Zone: 16::DISCORDANT SECTOR\n' +
-  'Demand map ICRS at 3c0001000-23c0001000.\n' +
-  'Heap//PSIM at 23c0002000-43c0002000.\n' +
-  'Thread "Idle": pointer: 0x23c0002010, stack: 0x6440000\n' +
-  'Thread "Main": pointer: 0x23c0002f70, stack: 0x6460000\n' +
-  '****** VDOMAIN for frame//integrator ******\n' +
-  'backend at /local/domain/0/backend/gms/\n' +
-  'Failed to read /local/domain/0/ssc/fs_sync.\n' +
-  'Failed to read /local/domain/0/gms/dummy_plug.\n' +
-  'Failed to read /local/domain/0/gms/manual_controls.\n' +
-  'WARNING: FRAME NOT PRESENT OR INVALID\n' +
-  '******************************************\n' +
-  'Initializing gms-cc-subsys v_int\n' +
-  'Initializing gms-cc-subsys tests\n' +
-  'Initializing gms-cc-subsys omninet_cls\n' +
-  'Initializing gms-cc-subsys events\n' +
-  'Hierarchical RCU implementation.\n' +
-  'RCU subjective-clock acceleration is DISABLED.\n' +
-  'Establishing encrypted link (52::BARYON EXCLUSION) . . . done\n' +
-  'AM-LI in unprivileged domain disabled\n' +
-  'No sensory bridge found // manual input mode enabled\n' +
-  CONSOLE_INPUT;
-const HELP_TEXT = '' +
-  'GMS COMP/CON Unit Mk XI Rev 11.4.1c\n' +
-  '5016.8.22 General Massive Systems // Please Operate Responsibly\n' +
-  'These commands are defined internally. Type \'help\' to see this list.\n' +
-  'about\tclear\thelp';
-
 function App() {
+
+  let [user, setUser] = useState('');
+
+  const CHARACTERS = /^[A-Za-z0-9 `~!@#$%^&*(),<.>/?;:'"\[{\]}\\|_-]$/;
+  const CONSOLE_INIT = '' +
+    'COMPANION/CONCIERGE UNIT INITIALIZING\n' +
+    'GMS COMP/CON Unit Mk XI Rev 11.4.1c\n' +
+    '5016.8.22 General Massive Systems // Please Operate Responsibly\n' +
+    'Initializing semantic manifold . . . done\n' +
+    'Initializing logic gradients . . . done\n' +
+    '  1.0255EB FREE (3.6EB TOTAL)\n' +
+    'KERNEL supported CPUs:\n' +
+    '  GMS MISSISSIPPI Series (MkII+)\n' +
+    '  IPS-N Carronade v9.1+\n' +
+    '  SSC Premier IV-XIV\n' +
+    '  HA DOMINANCE line/all\n' +
+    '  [WN UNKNOWN UNKNOWN UNKNOWN UNKNOWN UNKNOWN UNKN]\n' +
+    'Policy Zone: 16::DISCORDANT SECTOR\n' +
+    'Demand map ICRS at 3c0001000-23c0001000.\n' +
+    'Heap//PSIM at 23c0002000-43c0002000.\n' +
+    'Thread "Idle": pointer: 0x23c0002010, stack: 0x6440000\n' +
+    'Thread "Main": pointer: 0x23c0002f70, stack: 0x6460000\n' +
+    '****** VDOMAIN for frame//integrator ******\n' +
+    'backend at /local/domain/0/backend/gms/\n' +
+    'Failed to read /local/domain/0/ssc/fs_sync.\n' +
+    'Failed to read /local/domain/0/gms/dummy_plug.\n' +
+    'Failed to read /local/domain/0/gms/manual_controls.\n' +
+    'WARNING: FRAME NOT PRESENT OR INVALID\n' +
+    '******************************************\n' +
+    'Initializing gms-cc-subsys v_int\n' +
+    'Initializing gms-cc-subsys tests\n' +
+    'Initializing gms-cc-subsys omninet_cls\n' +
+    'Initializing gms-cc-subsys events\n' +
+    'Hierarchical RCU implementation.\n' +
+    'RCU subjective-clock acceleration is DISABLED.\n' +
+    'Establishing encrypted link (52::BARYON EXCLUSION) . . . done\n' +
+    'AM-LI in unprivileged domain disabled\n' +
+    'No sensory bridge found // manual input mode enabled\n' +
+    getConsoleInputString();
+  const HELP_TEXT = '' +
+    'GMS COMP/CON Unit Mk XI Rev 11.4.1c\n' +
+    '5016.8.22 General Massive Systems // Please Operate Responsibly\n' +
+    'These commands are defined internally. Type \'help\' to see this list.';
+
+  const USERS: {[index: string]: string} = {
+    'guest': '',
+    'wildfire': '0463dd9d859a7c177723514ab89168fae8b3916a8fb449eb48dc572b4c27122606cc8ee5bf4135cdf0ad5e75b122ae886b41e9c2ffd992787378fc5902bafd71'
+  }
+
   const [text, setText] = useState(CONSOLE_INIT);
   const [commandInput, setCommandInput] = useState('');
   const [allowKeyPress, setAllowKeyPress] = useState(false);
@@ -94,17 +100,83 @@ function App() {
     return parts;
   }
 
-  const COMMANDS: {[index: string]: (_: string[]) => void} = {
+  const COMMANDS: {[index: string]: (_: string[]) => number} = {
     'about': (_: string[]) => {
       setShowAboutDialog(true);
+      return 0;
+    },
+    'cd': (_: string[]) => {
+      // todo
+      addText('ERROR: FILESYSTEM NOT MOUNTED');
+      return 0;
     },
     'clear': (_: string[]) => {
       setConsoleSpeed(0.1);
-      setText(_ => '')
+      setText(_ => '');
+      return 0;
+    },
+    'echo': (args: string[]) => {
+      addText(args.join(' '));
+      return 0;
     },
     'help': (_: string[]) => {
       addText(HELP_TEXT);
+      for (const command of Object.keys(COMMANDS)) {
+        addText(command, '\t');
+      }
+      addText('');
       // todo args
+      return 0;
+    },
+    'login': (args: string[]) => {
+      const ERROR_STRING = 'Invalid username or password. This incident will be reported.';
+      const username = args[0];
+      if (!(username in USERS)) {
+        addText(ERROR_STRING);
+        return 0;
+      }
+      if (USERS[username] === '') {
+        setUser(username);
+        user = username;
+        return 0;
+      }
+      const pwd = args[1];
+      crypto.subtle.digest('SHA-512', new TextEncoder().encode(pwd)).then(value => {
+        const hashArray = Array.from(new Uint8Array(value));
+        const hashHex = hashArray
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        if (hashHex !== USERS[username]) {
+          addText(ERROR_STRING);
+        } else {
+          setUser(username);
+          user = username;
+        }
+        finishRunCommand();
+      });
+      return 1;
+    },
+    'logout': (_: string[]) => {
+      setUser('');
+      user = '';
+      return 0;
+    },
+    'ls': (_: string[]) => {
+      // todo
+      addText('ERROR: FILESYSTEM NOT MOUNTED');
+      return 0;
+    },
+    'hash': (args: string[]) => {
+      const text = args.join(' ');
+      crypto.subtle.digest('SHA-512', new TextEncoder().encode(text)).then(value => {
+        const hashArray = Array.from(new Uint8Array(value));
+        const hashHex = hashArray
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+        addText(hashHex);
+        finishRunCommand();
+      });
+      return 1;
     }
   };
 
@@ -112,10 +184,20 @@ function App() {
     addText(commandInput);
     const command = splitCommand(commandInput);
     if (Object.keys(COMMANDS).includes(command[0])) {
-      COMMANDS[command[0]](command.slice(1));
+      const returnValue = COMMANDS[command[0]](command.slice(1));
+      if (returnValue === 0) {
+        finishRunCommand();
+      } else {
+
+      }
     } else {
       addText(`unknown command: ${command[0]}`);
     }
+  }
+
+  function finishRunCommand() {
+    setCommandInput('');
+    addText(getConsoleInputString(), '');
   }
 
   function handleKeyPress(e: React.KeyboardEvent) {
@@ -125,8 +207,6 @@ function App() {
     if (e.key === 'Enter') {
       setAllowKeyPress(false);
       runCommand();
-      setCommandInput('');
-      addText(CONSOLE_INPUT, '');
     } else if (e.key === 'Backspace') {
       setCommandInput(commandInput.slice(0, commandInput.length - 1));
     } else if (CHARACTERS.test(e.key)) {
@@ -140,6 +220,10 @@ function App() {
   function handleAnimationEnd() {
     setAllowKeyPress(true);
     setConsoleSpeed(5);
+  }
+
+  function getConsoleInputString() {
+    return `${user}$ `;
   }
 
   return (
