@@ -15,6 +15,10 @@
   text-align: right;
 }
 
+#app {
+  min-height: 100vh;
+}
+
 header {
   h1 {
     letter-spacing: 5px;
@@ -23,7 +27,7 @@ header {
   }
 
   .top-bar {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
@@ -45,7 +49,7 @@ header {
   }
 
   .title {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 70%;

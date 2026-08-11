@@ -1,28 +1,27 @@
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef} from 'react';
 
 import reactLogo from '../assets/react.svg';
 import viteLogo from '../assets/vite.svg';
 import './About.css';
 
-function About() {
-  let [open, setOpen] = useState(false);
+function About(props: {show: boolean, setShow: (show: boolean) => void}) {
   let dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    if (open) {
+    if (props.show) {
       dialogRef?.current?.showModal();
     } else {
       dialogRef?.current?.close();
     }
-  }, [open]);
+  }, [props.show]);
 
   return (
     <>
       <dialog
         ref={dialogRef}
         className="about-dialog"
-        onCancel={() => setOpen(false)}
-        onClick={() => setOpen(false)}
+        onCancel={() => props.setShow(false)}
+        onClick={() => props.setShow(false)}
       >
         <div className="about" onClick={(e) => e.stopPropagation()}>
           <h1>COMP/CON</h1>
@@ -32,7 +31,7 @@ function About() {
           <img src={viteLogo} alt="Vite logo" />
         </div>
       </dialog>
-      <button className={'about-button'} onClick={() => setOpen(true)}>About</button>
+      <button className={'about-button'} onClick={() => props.setShow(true)}>About</button>
     </>
   );
 }

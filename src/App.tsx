@@ -1,7 +1,7 @@
 import './App.css'
 import About from './components/About.tsx';
 import Typewriter from './components/Typewriter.tsx';
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 import * as React from 'react';
 
 const CHARACTERS = /^[A-Za-z0-9 `~!@#$%^&*(),<.>/?;:'"\[{\]}\\|_-]$/;
@@ -41,17 +41,81 @@ const CONSOLE_INIT = '' +
   'AM-LI in unprivileged domain disabled\n' +
   'No sensory bridge found // manual input mode enabled\n' +
   CONSOLE_INPUT;
+const HELP_TEXT = '' +
+  'GMS COMP/CON Unit Mk XI Rev 11.4.1c\n' +
+  '5016.8.22 General Massive Systems // Please Operate Responsibly\n' +
+  'These commands are defined internally. Type \'help\' to see this list.\n' +
+  'about\tclear\thelp';
 
 function App() {
   const [text, setText] = useState(CONSOLE_INIT);
-  const [command, setCommand] = useState('');
+  const [commandInput, setCommandInput] = useState('');
   const [allowKeyPress, setAllowKeyPress] = useState(false);
+  const [consoleSpeed, setConsoleSpeed] = useState(5);
+
+  const consoleRef = useRef<HTMLDivElement>(null);
+  const consoleEndRef = useRef<HTMLDivElement>(null);
+  const [showAboutDialog, setShowAboutDialog] = useState(false);
+
+  function addText(newText: string, end: string = '\n'): void {
+    setText(prevText => prevText + newText + end);
+  }
+
+  function splitCommand(commandString: string): string[] {
+    const parts = [];
+    let currentPart = '';
+    let inSingleQuotes = false;
+    let inDoubleQuotes = false;
+    for (let char of commandString) {
+      if (char === '"') {
+        if (inSingleQuotes) {
+          currentPart += char;
+        } else {
+          inDoubleQuotes = !inDoubleQuotes;
+        }
+      } else if (char === "'") {
+        if (inDoubleQuotes) {
+          currentPart += char;
+        } else {
+          inSingleQuotes = !inSingleQuotes;
+        }
+      } else if (char === ' ') {
+        if (!inSingleQuotes && !inDoubleQuotes) {
+          parts.push(currentPart);
+          currentPart = '';
+        } else {
+          currentPart += char;
+        }
+      } else {
+        currentPart += char;
+      }
+    }
+    parts.push(currentPart);
+    return parts;
+  }
+
+  const COMMANDS: {[index: string]: (_: string[]) => void} = {
+    'about': (_: string[]) => {
+      setShowAboutDialog(true);
+    },
+    'clear': (_: string[]) => {
+      setConsoleSpeed(0.1);
+      setText(_ => '')
+    },
+    'help': (_: string[]) => {
+      addText(HELP_TEXT);
+      // todo args
+    }
+  };
 
   function runCommand() {
-    console.log(command);
-    setAllowKeyPress(false);
-    setText(text + `\nran command: ${command}\n${CONSOLE_INPUT}`);
-    setCommand('');
+    addText(commandInput);
+    const command = splitCommand(commandInput);
+    if (Object.keys(COMMANDS).includes(command[0])) {
+      COMMANDS[command[0]](command.slice(1));
+    } else {
+      addText(`unknown command: ${command[0]}`);
+    }
   }
 
   function handleKeyPress(e: React.KeyboardEvent) {
@@ -59,21 +123,27 @@ function App() {
       return;
     }
     if (e.key === 'Enter') {
+      setAllowKeyPress(false);
       runCommand();
+      setCommandInput('');
+      addText(CONSOLE_INPUT, '');
     } else if (e.key === 'Backspace') {
-      setText(text.slice(0, text.length - 1));
-      setCommand(command.slice(0, command.length - 1));
+      setCommandInput(commandInput.slice(0, commandInput.length - 1));
     } else if (CHARACTERS.test(e.key)) {
-      setText(text + e.key);
-      setCommand(command + e.key);
+      setCommandInput(commandInput + e.key);
     } else {
       console.log('key', e);
     }
     // e.preventDefault();
   }
 
+  function handleAnimationEnd() {
+    setAllowKeyPress(true);
+    setConsoleSpeed(5);
+  }
+
   return (
-    <div onKeyDown={handleKeyPress} tabIndex={0}>
+    <div id={'app'} onKeyDown={handleKeyPress} tabIndex={0}>
       <header>
         <div className="top-bar">
           <p className="version">V.0.0.1</p>
@@ -82,13 +152,15 @@ function App() {
           <h1>COMP/CON</h1>
         </div>
       </header>
-      <div className="buffer"></div>
-      <div className="console">
-        <Typewriter text={text} speed={5} onAnimationEnd={() => setAllowKeyPress(true)} />
+      <div className="buffer" />
+      <div className="console" ref={consoleRef}>
+        <Typewriter text={text + commandInput} speed={consoleSpeed} onAnimationType={() => consoleEndRef?.current?.scrollIntoView()} onAnimationEnd={handleAnimationEnd} />
+        <div ref={consoleEndRef} />
       </div>
+      <div className="buffer" />
       <footer>
         <div className="align-right">
-          <About/>
+          <About show={showAboutDialog} setShow={setShowAboutDialog}/>
         </div>
       </footer>
     </div>
