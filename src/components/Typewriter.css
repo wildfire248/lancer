@@ -4,10 +4,10 @@
     }
 }
 
-.typewriter.cursor::after {
-    content: " ";
-    width: 5px;
-    background: #ffffff;
-    display: inline-block;
-    animation: cursor-blink 1.2s steps(2) infinite;
-}
+/*.typewriter.cursor::after {*/
+/*    content: " ";*/
+/*    width: 5px;*/
+/*    background: #ffffff;*/
+/*    display: inline-block;*/
+/*    animation: cursor-blink 1.2s steps(2) infinite;*/
+/*}*/

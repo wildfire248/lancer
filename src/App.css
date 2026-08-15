@@ -91,3 +91,20 @@ footer {
   font-family: Consolas, monospace;
   margin: 1% 5%;
 }
+
+.console-input {
+  all: unset;
+  width: 80rem;
+  word-wrap: anywhere;
+  field-sizing: content;
+  caret-color: transparent;
+}
+
+.console-input-pre {
+  display: inline-block;
+  width: fit-content;
+}
+
+.console-input.cursor {
+  caret-color: var(--color-text-console);
+}

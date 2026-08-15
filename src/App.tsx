@@ -8,7 +8,6 @@ function App() {
 
   let [user, setUser] = useState('');
 
-  const CHARACTERS = /^[A-Za-z0-9 `~!@#$%^&*(),<.>/?;:'"\[{\]}\\|_-]$/;
   const CONSOLE_INIT = '' +
     'COMPANION/CONCIERGE UNIT INITIALIZING\n' +
     'GMS COMP/CON Unit Mk XI Rev 11.4.1c\n' +
@@ -42,8 +41,7 @@ function App() {
     'RCU subjective-clock acceleration is DISABLED.\n' +
     'Establishing encrypted link (52::BARYON EXCLUSION) . . . done\n' +
     'AM-LI in unprivileged domain disabled\n' +
-    'No sensory bridge found // manual input mode enabled\n' +
-    getConsoleInputString();
+    'No sensory bridge found // manual input mode enabled\n';
   const HELP_TEXT = '' +
     'GMS COMP/CON Unit Mk XI Rev 11.4.1c\n' +
     '5016.8.22 General Massive Systems // Please Operate Responsibly\n' +
@@ -56,11 +54,11 @@ function App() {
 
   const [text, setText] = useState(CONSOLE_INIT);
   const [commandInput, setCommandInput] = useState('');
-  const [allowKeyPress, setAllowKeyPress] = useState(false);
+  const [pendingAnimations, setPendingAnimations] = useState(2);
   const [consoleSpeed, setConsoleSpeed] = useState(5);
 
   const consoleRef = useRef<HTMLDivElement>(null);
-  const consoleEndRef = useRef<HTMLDivElement>(null);
+  const consoleInputRef = useRef<HTMLTextAreaElement>(null);
   const [showAboutDialog, setShowAboutDialog] = useState(false);
 
   function addText(newText: string, end: string = '\n'): void {
@@ -181,8 +179,10 @@ function App() {
   };
 
   function runCommand() {
-    addText(commandInput);
+    setPendingAnimations(2);
+    addText(getConsoleInputString() + commandInput);
     const command = splitCommand(commandInput);
+    setCommandInput('');
     if (Object.keys(COMMANDS).includes(command[0])) {
       const returnValue = COMMANDS[command[0]](command.slice(1));
       if (returnValue === 0) {
@@ -196,30 +196,33 @@ function App() {
   }
 
   function finishRunCommand() {
-    setCommandInput('');
-    addText(getConsoleInputString(), '');
+    // addText(getConsoleInputString(), '');
   }
 
   function handleKeyPress(e: React.KeyboardEvent) {
-    if (!allowKeyPress) {
+    if (pendingAnimations > 0) {
       return;
     }
     if (e.key === 'Enter') {
-      setAllowKeyPress(false);
       runCommand();
-    } else if (e.key === 'Backspace') {
-      setCommandInput(commandInput.slice(0, commandInput.length - 1));
-    } else if (CHARACTERS.test(e.key)) {
-      setCommandInput(commandInput + e.key);
-    } else {
-      console.log('key', e);
     }
     // e.preventDefault();
   }
 
+  function handleInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setCommandInput(e.target.value);
+  }
+
+  function handleClick(e: React.MouseEvent) {
+    if (e.button === 0) { // LMB
+      consoleInputRef?.current?.focus();
+    }
+  }
+
   function handleAnimationEnd() {
-    setAllowKeyPress(true);
     setConsoleSpeed(5);
+    setPendingAnimations(prev => prev - 1);
+    consoleInputRef.current?.focus();
   }
 
   function getConsoleInputString() {
@@ -227,7 +230,7 @@ function App() {
   }
 
   return (
-    <div id={'app'} onKeyDown={handleKeyPress} tabIndex={0}>
+    <div id={'app'} onClick={handleClick} tabIndex={0}>
       <header>
         <div className="top-bar">
           <p className="version">V.0.0.1</p>
@@ -238,8 +241,11 @@ function App() {
       </header>
       <div className="buffer" />
       <div className="console" ref={consoleRef}>
-        <Typewriter text={text + commandInput} speed={consoleSpeed} onAnimationType={() => consoleEndRef?.current?.scrollIntoView()} onAnimationEnd={handleAnimationEnd} />
-        <div ref={consoleEndRef} />
+        <Typewriter text={text} speed={consoleSpeed} onAnimationType={() => consoleInputRef?.current?.scrollIntoView()} onAnimationEnd={handleAnimationEnd} />
+        <div className={'console-input-container'}>
+          {pendingAnimations < 1 ? <pre className={'console-input-pre'}>{getConsoleInputString()}</pre> : ''}
+          <textarea ref={consoleInputRef} className={`console-input${pendingAnimations < 1 ? ' cursor' : ''}`} disabled={pendingAnimations > 0} value={commandInput} onKeyDown={handleKeyPress} onChange={handleInputChange} />
+        </div>
       </div>
       <div className="buffer" />
       <footer>
