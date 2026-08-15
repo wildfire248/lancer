@@ -1,0 +1,33 @@
+COMPANION/CONCIERGE UNIT INITIALIZING
+GMS COMP/CON Unit Mk XI Rev 11.4.1c
+5016.8.22 General Massive Systems // Please Operate Responsibly
+Initializing semantic manifold . . . done
+Initializing logic gradients . . . done
+  1.0255EB FREE (3.6EB TOTAL)
+KERNEL supported CPUs:
+  GMS MISSISSIPPI Series (MkII+)
+  IPS-N Carronade v9.1+
+  SSC Premier IV-XIV
+  HA DOMINANCE line/all
+  [WN UNKNOWN UNKNOWN UNKNOWN UNKNOWN UNKNOWN UNKN]
+Policy Zone: 16::DISCORDANT SECTOR
+Demand map ICRS at 3c0001000-23c0001000.
+Heap//PSIM at 23c0002000-43c0002000.
+Thread "Idle": pointer: 0x23c0002010, stack: 0x6440000
+Thread "Main": pointer: 0x23c0002f70, stack: 0x6460000
+****** VDOMAIN for frame//integrator ******
+backend at /local/domain/0/backend/gms/
+Failed to read /local/domain/0/ssc/fs_sync.
+Failed to read /local/domain/0/gms/dummy_plug.
+Failed to read /local/domain/0/gms/manual_controls.
+WARNING: FRAME NOT PRESENT OR INVALID
+******************************************
+Initializing gms-cc-subsys v_int
+Initializing gms-cc-subsys tests
+Initializing gms-cc-subsys omninet_cls
+Initializing gms-cc-subsys events
+Hierarchical RCU implementation.
+RCU subjective-clock acceleration is DISABLED.
+Establishing encrypted link (52::BARYON EXCLUSION) . . . done
+AM-LI in unprivileged domain disabled
+No sensory bridge found // manual input mode enabled

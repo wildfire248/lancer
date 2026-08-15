@@ -69,6 +69,13 @@ function bin(size: number, seed?: SeedOrRNG): (args: string[]) => Promise<string
   }
 }
 
+const startTime = Date.now();
+
+async function fileProcUptime(_: string[]): Promise<string> {
+  const uptime = (Date.now() - startTime) / 1000;
+  return `${uptime.toFixed(2)}`;
+}
+
 async function fetchFile(args: string[]): Promise<string> {
   if (args.length === 0) {
     return '';
@@ -122,11 +129,21 @@ export const FILE_SYSTEM: Directory = {
     },
     'proc': {
       contents: {
-        'cpuinfo': fetchFile
+        'cpuinfo': fetchFile,
+        'meminfo': fetchFile,
+        'uptime': fileProcUptime,
+        // todo random process folders
       }
     },
     'sys': {
-      contents: {}
+      contents: {
+        'devices': {
+          contents: {}
+        },
+        'kernel': {
+          contents: {}
+        }
+      }
     },
     'usr': {
       contents: {
@@ -144,7 +161,9 @@ export const FILE_SYSTEM: Directory = {
     'var': {
       contents: {
         'log': {
-          contents: {}
+          contents: {
+            'syslog': fetchFile,
+          }
         }
       }
     }

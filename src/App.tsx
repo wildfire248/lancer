@@ -255,6 +255,12 @@ function App() {
     if (pendingAnimations > 0) {
       return;
     }
+    if (e.key === 'Control') {
+      return;
+    }
+    if (e.ctrlKey) {
+      return;
+    }
     consoleInputRef?.current?.focus();
     if (e.key === 'Enter') {
       await runCommand();
@@ -269,10 +275,10 @@ function App() {
     setCommandInput(e.target.value);
   }
 
-  function handleClick(e: React.MouseEvent) {
-    if (e.button === 0) { // LMB
-      consoleInputRef?.current?.focus();
-    }
+  function handleClick(_: React.MouseEvent) {
+    // if (e.button === 0) { // LMB
+    //   consoleInputRef?.current?.focus();
+    // }
   }
 
   function handleAnimationEnd() {
