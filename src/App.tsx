@@ -248,7 +248,7 @@ function App() {
         <Typewriter text={text} speed={consoleSpeed} onAnimationType={() => consoleInputRef?.current?.scrollIntoView()} onAnimationEnd={handleAnimationEnd} />
         <div className={'console-input-container'}>
           {pendingAnimations < 1 ? <pre className={'console-input-pre'}>{getConsoleInputString()}</pre> : ''}
-          <textarea ref={consoleInputRef} className={`console-input${pendingAnimations < 1 ? ' cursor' : ''}`} disabled={pendingAnimations > 0} value={commandInput} onKeyDown={handleKeyPress} onChange={handleInputChange} />
+          <textarea ref={consoleInputRef} className={`console-input${pendingAnimations < 1 ? ' cursor' : ''}`} style={{'width': `min(80ch, calc(100% - ${getConsoleInputString().length}ch))`}} disabled={pendingAnimations > 0} value={commandInput} onKeyDown={handleKeyPress} onChange={handleInputChange} />
         </div>
       </div>
       <div className="buffer-footer" />
