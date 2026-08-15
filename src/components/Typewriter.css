@@ -4,6 +4,11 @@
     }
 }
 
+.typewriter {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
 /*.typewriter.cursor::after {*/
 /*    content: " ";*/
 /*    width: 5px;*/

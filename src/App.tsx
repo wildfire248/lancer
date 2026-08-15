@@ -239,7 +239,11 @@ function App() {
           <h1>COMP/CON</h1>
         </div>
       </header>
-      <div className="buffer" />
+      <div className="buffer">
+        <div className="title">
+          <h1>COMP/CON</h1>
+        </div>
+      </div>
       <div className="console" ref={consoleRef}>
         <Typewriter text={text} speed={consoleSpeed} onAnimationType={() => consoleInputRef?.current?.scrollIntoView()} onAnimationEnd={handleAnimationEnd} />
         <div className={'console-input-container'}>
@@ -247,7 +251,7 @@ function App() {
           <textarea ref={consoleInputRef} className={`console-input${pendingAnimations < 1 ? ' cursor' : ''}`} disabled={pendingAnimations > 0} value={commandInput} onKeyDown={handleKeyPress} onChange={handleInputChange} />
         </div>
       </div>
-      <div className="buffer" />
+      <div className="buffer-footer" />
       <footer>
         <div className="align-right">
           <About show={showAboutDialog} setShow={setShowAboutDialog}/>
