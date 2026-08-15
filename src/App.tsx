@@ -3,10 +3,9 @@ import About from './components/About.tsx';
 import Typewriter from './components/Typewriter.tsx';
 import {useRef, useState} from 'react';
 import * as React from 'react';
+import {parseDirPath, getFile, isFile, isDir} from './filesys.ts';
 
 function App() {
-
-  let [user, setUser] = useState('');
 
   const CONSOLE_INIT = '' +
     'COMPANION/CONCIERGE UNIT INITIALIZING\n' +
@@ -55,11 +54,17 @@ function App() {
   const [text, setText] = useState(CONSOLE_INIT);
   const [commandInput, setCommandInput] = useState('');
   const [pendingAnimations, setPendingAnimations] = useState(2);
-  const [consoleSpeed, setConsoleSpeed] = useState(5);
+  const [consoleSpeed, setConsoleSpeed] = useState(3);
 
   const consoleRef = useRef<HTMLDivElement>(null);
   const consoleInputRef = useRef<HTMLTextAreaElement>(null);
   const [showAboutDialog, setShowAboutDialog] = useState(false);
+
+  let [user, setUser] = useState('guest');
+  const host = 'localhost';
+  const [cwd, setCwd] = useState('/');
+
+  const [blocking, setBlocking] = useState(false);
 
   function addText(newText: string, end: string = '\n'): void {
     setText(prevText => prevText + newText + end);
@@ -98,26 +103,60 @@ function App() {
     return parts;
   }
 
-  const COMMANDS: {[index: string]: (_: string[]) => number} = {
-    'about': (_: string[]) => {
+  const COMMANDS: {[index: string]: (_: string[]) => Promise<number>} = {
+    'about': async (_: string[]) => {
       setShowAboutDialog(true);
       return 0;
     },
-    'cd': (_: string[]) => {
-      // todo
-      addText('ERROR: FILESYSTEM NOT MOUNTED');
+    'cat': async (args: string[]) => {
+      let path = parseDirPath(cwd, '.');
+      if (args.length > 0) {
+        path = parseDirPath(cwd, args[0]);
+      }
+      let file = getFile(path);
+      if (isFile(file)) {
+        setBlocking(true);
+        const contents = await file([path]);
+        // console.log(contents);
+        if (contents.length > 0) {
+          addText(contents);
+        }
+        setBlocking(false);
+        setPendingAnimations(1);
+        finishRunCommand();
+      } else if (isDir(file)) {
+        addText(`cat: ${args[0]}: Is a directory`);
+      } else {
+        addText(`cat: ${args[0]}: No such file or directory`);
+      }
+      return 1;
+    },
+    'cd': async (args: string[]) => {
+      if (args.length === 0) {
+        return 0;
+      }
+      let dirPath = parseDirPath(cwd, args[0]);
+      let dir = getFile(dirPath);
+      if (isDir(dir)) {
+        setCwd(dirPath);
+      } else if (isFile(dir)) {
+        addText(`cd: ${args[0]}: Not a directory`);
+      } else {
+        addText(`cd: ${args[0]}: No such file or directory`);
+      }
       return 0;
     },
-    'clear': (_: string[]) => {
-      setConsoleSpeed(0.1);
+    'clear': async (_: string[]) => {
+      setConsoleSpeed(0);
       setText(_ => '');
+      setPendingAnimations(1);
       return 0;
     },
-    'echo': (args: string[]) => {
+    'echo': async (args: string[]) => {
       addText(args.join(' '));
       return 0;
     },
-    'help': (_: string[]) => {
+    'help': async (_: string[]) => {
       addText(HELP_TEXT);
       for (const command of Object.keys(COMMANDS)) {
         addText(command, '\t');
@@ -126,7 +165,7 @@ function App() {
       // todo args
       return 0;
     },
-    'login': (args: string[]) => {
+    'login': async (args: string[]) => {
       const ERROR_STRING = 'Invalid username or password. This incident will be reported.';
       const username = args[0];
       if (!(username in USERS)) {
@@ -154,37 +193,50 @@ function App() {
       });
       return 1;
     },
-    'logout': (_: string[]) => {
-      setUser('');
-      user = '';
+    'logout': async (_: string[]) => {
+      setUser('guest');
+      user = 'guest';
       return 0;
     },
-    'ls': (_: string[]) => {
-      // todo
-      addText('ERROR: FILESYSTEM NOT MOUNTED');
+    'ls': async (args: string[]) => {
+      let dirPath = parseDirPath(cwd, '.');
+      if (args.length > 0) {
+        dirPath = parseDirPath(cwd, args[0]);
+      }
+      let dir = getFile(dirPath);
+      if (isDir(dir)) {
+        const contents = Object.keys(dir.contents);
+        for (const file of contents) {
+          addText(file, '\t');
+        }
+        addText('');
+      } else if (isFile(dir)) {
+        addText(`ls: ${args[0]}: Not a directory`);
+      } else {
+        addText(`ls: ${args[0]}: No such file or directory`);
+      }
       return 0;
     },
-    'hash': (args: string[]) => {
+    'hash': async (args: string[]) => {
       const text = args.join(' ');
-      crypto.subtle.digest('SHA-512', new TextEncoder().encode(text)).then(value => {
-        const hashArray = Array.from(new Uint8Array(value));
-        const hashHex = hashArray
-          .map((b) => b.toString(16).padStart(2, "0"))
-          .join("");
-        addText(hashHex);
-        finishRunCommand();
-      });
-      return 1;
+      const value = await crypto.subtle.digest('SHA-512', new TextEncoder().encode(text));
+      const hashArray = Array.from(new Uint8Array(value));
+      const hashHex = hashArray
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      addText(hashHex);
+      finishRunCommand();
+      return 0;
     }
   };
 
-  function runCommand() {
+  async function runCommand() {
     setPendingAnimations(2);
     addText(getConsoleInputString() + commandInput);
     const command = splitCommand(commandInput);
     setCommandInput('');
     if (Object.keys(COMMANDS).includes(command[0])) {
-      const returnValue = COMMANDS[command[0]](command.slice(1));
+      const returnValue = await COMMANDS[command[0]](command.slice(1));
       if (returnValue === 0) {
         finishRunCommand();
       } else {
@@ -199,17 +251,21 @@ function App() {
     // addText(getConsoleInputString(), '');
   }
 
-  function handleKeyPress(e: React.KeyboardEvent) {
+  async function handleKeyPress(e: React.KeyboardEvent) {
     if (pendingAnimations > 0) {
       return;
     }
+    consoleInputRef?.current?.focus();
     if (e.key === 'Enter') {
-      runCommand();
+      await runCommand();
     }
     // e.preventDefault();
   }
 
   function handleInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    if (pendingAnimations > 0) {
+      return;
+    }
     setCommandInput(e.target.value);
   }
 
@@ -220,17 +276,23 @@ function App() {
   }
 
   function handleAnimationEnd() {
-    setConsoleSpeed(5);
+    setConsoleSpeed(3);
     setPendingAnimations(prev => prev - 1);
+    // setBlocking(false);
     consoleInputRef.current?.focus();
+    // console.log(text);
   }
 
   function getConsoleInputString() {
-    return `${user}$ `;
+    return `${user}@${host}:${cwd}$ `;
+  }
+
+  function allowInput() {
+    return !blocking && !(pendingAnimations > 0);
   }
 
   return (
-    <div id={'app'} onClick={handleClick} tabIndex={0}>
+    <div id={'app'} onClick={handleClick} onKeyDown={handleKeyPress} tabIndex={0}>
       <header>
         <div className="top-bar">
           <p className="version">V.0.0.1</p>
@@ -247,8 +309,10 @@ function App() {
       <div className="console" ref={consoleRef}>
         <Typewriter text={text} speed={consoleSpeed} onAnimationType={() => consoleInputRef?.current?.scrollIntoView()} onAnimationEnd={handleAnimationEnd} />
         <div className={'console-input-container'}>
-          {pendingAnimations < 1 ? <pre className={'console-input-pre'}>{getConsoleInputString()}</pre> : ''}
-          <textarea ref={consoleInputRef} className={`console-input${pendingAnimations < 1 ? ' cursor' : ''}`} style={{'width': `min(80ch, calc(100% - ${getConsoleInputString().length}ch))`}} disabled={pendingAnimations > 0} value={commandInput} onKeyDown={handleKeyPress} onChange={handleInputChange} />
+          {allowInput() ? <pre className={'console-input-pre'}>{getConsoleInputString()}</pre> : ''}
+          <textarea ref={consoleInputRef} className={`console-input${allowInput() ? ' cursor' : ''}`} style={{'width': `min(80ch, calc(100% - ${getConsoleInputString().length}ch))`}} value={commandInput} onChange={handleInputChange} />
+          {/*<p>{pendingAnimations}</p>*/}
+          {/*<p>{blocking ? 'true' : 'false'}</p>*/}
         </div>
       </div>
       <div className="buffer-footer" />

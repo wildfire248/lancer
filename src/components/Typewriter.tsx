@@ -37,7 +37,7 @@ function useTypewriter(text: string, speed: number = 50,
     }
     setShowCursor(true);
     onAnimationEnd?.();
-  }, [text, speed, displayText, displayLength]);
+  }, [text, displayText, displayLength]);
 
   // console.log(displayText.slice(0, displayLength));
 
