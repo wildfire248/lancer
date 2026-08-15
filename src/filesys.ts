@@ -106,20 +106,31 @@ export const FILE_SYSTEM: Directory = {
     'dev': {
       contents: {
         'null': text(''),
-        'zero': text(' '.repeat(1024)),
         'random': bin(1024),
-        'stdin': text(''),
         'stderr': text(''),
+        'stdin': text(''),
         'stdout': text(''),
-        'tty': text(''),
         'sda': bin(2048, '/dev/sda'),
+        'tty': text(''),
+        'zero': text(' '.repeat(1024)),
       }
     },
     'etc': {
-      contents: {}
+      contents: {
+        'hostname': text('localhost'),
+        'hosts': fetchFile,
+        'passwd': fetchFile,
+      }
     },
     'home': {
-      contents: {}
+      contents: {
+        'guest': {
+          contents: {}
+        },
+        'wildfire': {
+          contents: {}
+        }
+      }
     },
     'lib': {
       contents: {
@@ -145,6 +156,9 @@ export const FILE_SYSTEM: Directory = {
         }
       }
     },
+    'tmp': {
+      contents: {}
+    },
     'usr': {
       contents: {
         'bin': {
@@ -163,6 +177,8 @@ export const FILE_SYSTEM: Directory = {
         'log': {
           contents: {
             'syslog': fetchFile,
+            'auth.log': text(''),
+            'kern.log': text(''),
           }
         }
       }
