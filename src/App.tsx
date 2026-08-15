@@ -62,7 +62,7 @@ function App() {
 
   let [user, setUser] = useState('guest');
   const host = 'localhost';
-  const [cwd, setCwd] = useState('/');
+  const [cwd, setCwd] = useState('/home/guest');
 
   const [blocking, setBlocking] = useState(false);
 

@@ -87,16 +87,23 @@ async function fetchFile(args: string[]): Promise<string> {
   return await response.text();
 }
 
+const binDirectory: Directory = {
+  contents: {
+    'about': bin(512, '/bin/about'),
+    'bash': bin(512, '/bin/bash'),
+    'cat': bin(512, '/bin/cat'),
+    'init': bin(512, '/bin/init'),
+    'gms-cc': bin(512, '/bin/gms-cc'),
+    'hash': bin(512, '/bin/hash'),
+    'ls': bin(512, '/bin/ls'),
+    'nano': bin(512, '/bin/nano'),
+    'sudo': bin(512, '/bin/sudo'),
+  }
+};
+
 export const FILE_SYSTEM: Directory = {
   contents: {
-    'bin': {
-      contents: {
-        'about': bin(512, '/bin/about'),
-        'cat': bin(512, '/bin/cat'),
-        'hash': bin(512, '/bin/hash'),
-        'ls': bin(512, '/bin/ls'),
-      }
-    },
+    'bin': binDirectory,
     'boot': {
       contents: {
         'kernel': bin(1024, '/boot/kernel'),
@@ -140,10 +147,41 @@ export const FILE_SYSTEM: Directory = {
     },
     'proc': {
       contents: {
+        '1': {
+          contents: {
+            'cmdline': text('/bin/init'),
+            'status': text('idle'),
+            'cwd': text('/'),
+            'exe': bin(512, '/bin/init'),
+            'environ': text('TERM=linuxCOLUMS=80LINES=25'),
+            'fd': {
+              contents: {
+                '0': text(''),
+                '1': text(''),
+                '2': text(''),
+              }
+            }
+          }
+        },
+        '2': {
+          contents: {
+            'cmdline': text('/bin/bash'),
+            'status': text('running'),
+            'cwd': text('/'),
+            'exe': bin(512, '/bin/bash'),
+            'environ': text(''),
+            'fd': {
+              contents: {
+                '0': text(''),
+                '1': text(''),
+                '2': text(''),
+              }
+            }
+          }
+        },
         'cpuinfo': fetchFile,
         'meminfo': fetchFile,
         'uptime': fileProcUptime,
-        // todo random process folders
       }
     },
     'sys': {
@@ -161,9 +199,7 @@ export const FILE_SYSTEM: Directory = {
     },
     'usr': {
       contents: {
-        'bin': {
-          contents: {}
-        },
+        'bin': binDirectory,
         'lib': {
           contents: {}
         },
