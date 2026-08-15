@@ -132,10 +132,36 @@ export const FILE_SYSTEM: Directory = {
     'home': {
       contents: {
         'guest': {
-          contents: {}
+          contents: {
+            'characters': {
+              contents: {
+                'wildfire.txt': fetchFile,
+              }
+            },
+            'factions': {
+              contents: {
+                'blessed_lance.txt': fetchFile,
+                'nova_lumai.txt': fetchFile,
+                'white_blights.txt': fetchFile,
+              }
+            },
+            'locations': {
+              contents: {
+                'edge_of_eternity.txt': fetchFile,
+                'last_gasp_station.txt': fetchFile,
+                'soundgarden.txt': fetchFile,
+              }
+            }
+          }
         },
         'wildfire': {
-          contents: {}
+          contents: {
+            'character': {
+              contents: {
+                'backstory': fetchFile
+              }
+            }
+          }
         }
       }
     },
